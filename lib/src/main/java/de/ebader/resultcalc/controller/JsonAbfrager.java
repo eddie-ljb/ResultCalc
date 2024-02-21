@@ -95,28 +95,33 @@ public class JsonAbfrager implements JsonAbfragen {
 	public void getBearbeiteEntryVonID(Integer teamid, double bewertung, double moral, double form) {
 		try {
 			File datei = new File(System.getProperty("user.home") + File.separator + "erstellteTeams.json");
-			Map<String, Double> attribute = new HashMap<String, Double>();
-			attribute.put("teambewertung", bewertung);
-			attribute.put("moral", moral);
-			attribute.put("form", form);
+			Map<String, Object> existierendeDaten;
+			Map<String, Double> neueattribute = new HashMap<String, Double>();
+			neueattribute.put("moral", moral);
+			neueattribute.put("form", form);
+			neueattribute.put("teambewertung", bewertung);
+			String namen = getTeamNamenUeberID(teamid);
+			
 			Map<String, Object> neuerEintrag = new HashMap<String, Object>();
-			neuerEintrag.put("teamname", jsonParserEigene.parseTeamNamenUeberID(teamid));
-			neuerEintrag.put("attribute", attribute);
-			if (datei.exists()) {
-				Map<String, Object> existierendeDaten = objectmapper.readValue(datei, Map.class);
-				
-				if (existierendeDaten.containsKey("Entry")) {
-					Map<String, Object> entryMap = (Map<String, Object>) existierendeDaten.get("Entry");
-					
-					String eintragNummerKey = String.valueOf(teamid);
-					if (entryMap.containsKey(eintragNummerKey)) {
-						entryMap.remove(eintragNummerKey);
-						entryMap.put(eintragNummerKey, neuerEintrag);
-						objectmapper.writeValue(datei, entryMap);
-					}
-				}
-				
+			neuerEintrag.put("teamname", namen);
+			neuerEintrag.put("attribute", neueattribute);
+			
+			if(datei.exists() && datei.length() > 0) {
+				existierendeDaten = objectmapper.readValue(datei, Map.class);
+			} else {
+				existierendeDaten = new HashMap<String, Object>();
 			}
+			System.out.println(existierendeDaten.get(teamid));
+			
+			Map<String, Object> eintraege = (Map<String, Object>) existierendeDaten.get("Entry");
+			eintraege.remove(String.valueOf(teamid));
+			eintraege.put(teamid.toString(), neuerEintrag);
+			existierendeDaten = new HashMap<String, Object>();
+			existierendeDaten.put("Entry", eintraege);
+			
+			
+			Map<String, Object> entryMap = (Map<String, Object>) existierendeDaten.computeIfAbsent("Entry", k -> new HashMap<String, Object>());
+			objectmapper.writeValue(datei, existierendeDaten);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
