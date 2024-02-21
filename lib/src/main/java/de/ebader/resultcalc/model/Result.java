@@ -20,10 +20,11 @@ public class Result {
 	
 	public List<Integer> berechneErgebnis(Team team1, Team team2) {
 		List<Integer> ergebnisse = new ArrayList<Integer>();
-		double formdifferenz = team1.getForm() - team2.getForm();
-		double bewertungsdifferenz = team1.getBewertung() - team2.getBewertung();
-		double moraldifferenz = team1.getMoral() - team2.getMoral();
+		int formdifferenz = (int) (team1.getForm() - team2.getForm());
+		int bewertungsdifferenz = (int) (team1.getBewertung() - team2.getBewertung());
+		int moraldifferenz = (int) (team1.getMoral() - team2.getMoral());
 		double vorteil = berechneVorteil(formdifferenz, bewertungsdifferenz, moraldifferenz);
+		System.out.println("Vorteil: " + vorteil);
 		Random r = new Random();
 		int ergebnis1 = 0;
 		int ergebnis2 = 0;
@@ -51,7 +52,7 @@ public class Result {
 		return ergebnisse;
 	}
 	
-	private double berechneVorteil (double formdifferenz, double bewertungsdifferenz, double moraldifferenz) {
+	private double berechneVorteil (int formdifferenz, int bewertungsdifferenz, int moraldifferenz) {
 		double vorteil = 0.0;
 		if (formdifferenz > -201 && formdifferenz < -100) {
 			vorteil += 1.5;

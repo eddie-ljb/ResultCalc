@@ -191,6 +191,23 @@ public class JsonAbfrager implements JsonAbfragen {
 	    	attributnamen.add("form");
 	    	
 	    	return attributnamen;
-	    } 
+	    }
+	    
+	    public int getTeamIDVonTeamNamen(String namen) {
+	    	jsonParserEigene.refresheJsonNode();
+	    	
+	    	List<Integer> teamIDs = jsonParserEigene.getPrognoseIDs();
+	    	
+	    	for (Integer integer : teamIDs) {
+				String testnamen = getTeamNamenUeberID(integer);
+				System.out.println("Testnamen: " + testnamen);
+				if (namen.equals(testnamen)) {
+					System.out.println("Namen: " + namen + " Testnamen: " + testnamen);
+					return integer;
+				}
+			}
+	    	
+	    	return 0;
+	    }
 
 }

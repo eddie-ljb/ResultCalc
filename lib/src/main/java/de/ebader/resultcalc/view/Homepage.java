@@ -25,6 +25,8 @@ import java.awt.Toolkit;
 
 import javax.swing.JTextArea;
 import java.awt.Color;
+import java.awt.Component;
+
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import java.awt.event.MouseAdapter;
@@ -37,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.JComboBox;
 
 @SuppressWarnings("unused")
 public class Homepage extends JFrame {
@@ -44,8 +47,6 @@ public class Homepage extends JFrame {
 	private static final long serialVersionUID = 1L;
 	@SuppressWarnings("unused")
 	private JPanel contentPane;
-	private JTextField textFieldFirstTeam;
-	private JTextField textFieldSecondTeam;
 	Calc calc;
 	JsonAbfragen jsonAbfrager;
 
@@ -71,13 +72,16 @@ public class Homepage extends JFrame {
 	 * Create the frame.
 	 */
 	public Homepage(Calc calc, JsonAbfragen jsonAbfrager) {
+		getContentPane().setBackground(new Color(255, 255, 255));
 		this.calc = calc;
 		this.jsonAbfrager = jsonAbfrager;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 750, 600);
 		getContentPane().setLayout(null);
 		setResizable(false);
+		Image logo = new ImageIcon(this.getClass().getResource("/resultcalclogo.png")).getImage();
 		
+		setIconImage(logo);
 		
 		JLabel lblHeader = new JLabel("ResultCalc by Etienne Bader");
 		lblHeader.setBackground(new Color(192, 192, 192));
@@ -85,6 +89,28 @@ public class Homepage extends JFrame {
 		lblHeader.setFont(new Font("Tahoma", Font.BOLD, 32));
 		lblHeader.setBounds(10, 10, 716, 39);
 		getContentPane().add(lblHeader);
+		
+		JComboBox comboBoxTeam1 = new JComboBox();
+		comboBoxTeam1.setBackground(new Color(255, 255, 255));
+		comboBoxTeam1.setBounds(233, 291, 212, 21);
+		getContentPane().add(comboBoxTeam1);
+		
+		JComboBox comboBoxTeam2 = new JComboBox();
+		comboBoxTeam2.setBackground(new Color(255, 255, 255));
+		comboBoxTeam2.setBounds(481, 291, 212, 21);
+		getContentPane().add(comboBoxTeam2);
+		
+		List<Integer> teamIDs = jsonAbfrager.getTeamIDsVonGespeichertenTeams();
+		Map<Integer, String> teamnamen = new HashMap<Integer, String>();
+		
+		for (Integer integer : teamIDs) {
+			teamnamen.put(integer, jsonAbfrager.getTeamNamenUeberID(integer));
+		}
+		
+		for (Integer integer : teamIDs) {
+			comboBoxTeam1.addItem(teamnamen.get(integer));
+			comboBoxTeam2.addItem(teamnamen.get(integer));
+		}
 		
 		JButton btnNewTeam = new JButton("NEW TEAM");
 		btnNewTeam.addMouseListener(new MouseAdapter() {
@@ -103,6 +129,20 @@ public class Homepage extends JFrame {
 				if (returnValue == 0) {
 					jsonAbfrager.getSpeichereInJson(attribute, attributNamenSet, name);
 				}
+				comboBoxTeam1.removeAllItems();
+				comboBoxTeam2.removeAllItems();
+				
+				List<Integer> teamIDs = jsonAbfrager.getTeamIDsVonGespeichertenTeams();
+				Map<Integer, String> teamnamen = new HashMap<Integer, String>();
+				
+				for (Integer integer : teamIDs) {
+					teamnamen.put(integer, jsonAbfrager.getTeamNamenUeberID(integer));
+				}
+				
+				for (Integer integer : teamIDs) {
+					comboBoxTeam1.addItem(teamnamen.get(integer));
+					comboBoxTeam2.addItem(teamnamen.get(integer));
+				}
 			}
 		});
 		
@@ -116,6 +156,23 @@ public class Homepage extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				int id = Integer.valueOf(JOptionPane.showInputDialog("Das Team mit welcher ID soll ich löschen?"));
 				jsonAbfrager.getLoescheEintragUnterEntry(id);
+				
+				comboBoxTeam1.removeAllItems();
+				comboBoxTeam2.removeAllItems();
+				
+				List<Integer> teamIDs = jsonAbfrager.getTeamIDsVonGespeichertenTeams();
+				Map<Integer, String> teamnamen = new HashMap<Integer, String>();
+				
+				for (Integer integer : teamIDs) {
+					teamnamen.put(integer, jsonAbfrager.getTeamNamenUeberID(integer));
+				}
+				
+				for (Integer integer : teamIDs) {
+					if(integer != id) {
+						comboBoxTeam1.addItem(teamnamen.get(integer));
+						comboBoxTeam2.addItem(teamnamen.get(integer));
+					}
+				}
 			}
 		});
 		
@@ -160,24 +217,22 @@ public class Homepage extends JFrame {
 		lblSecondTeam.setBounds(497, 211, 152, 40);
 		getContentPane().add(lblSecondTeam);
 		
-		textFieldFirstTeam = new JTextField();
-		textFieldFirstTeam.setBounds(288, 262, 130, 19);
-		getContentPane().add(textFieldFirstTeam);
-		textFieldFirstTeam.setColumns(10);
-		
-		textFieldSecondTeam = new JTextField();
-		textFieldSecondTeam.setBounds(507, 262, 140, 19);
-		getContentPane().add(textFieldSecondTeam);
-		textFieldSecondTeam.setColumns(10);
 		
 		JButton btnCalculate = new JButton("CALCULATE");
 		btnCalculate.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				int team1ID = Integer.valueOf(textFieldFirstTeam.getText());
-				int team2ID = Integer.valueOf(textFieldSecondTeam.getText());
-				String teamname1 = jsonAbfrager.getTeamNamenUeberID(team1ID);
-				String teamname2 = jsonAbfrager.getTeamNamenUeberID(team2ID);
+				
+				String teamname1 = (String) comboBoxTeam1.getItemAt(comboBoxTeam1.getSelectedIndex());
+				String teamname2 = (String) comboBoxTeam2.getItemAt(comboBoxTeam2.getSelectedIndex());
+				
+				System.out.println(teamname2);
+				
+				int team1ID = jsonAbfrager.getTeamIDVonTeamNamen(teamname1);
+				int team2ID = jsonAbfrager.getTeamIDVonTeamNamen(teamname2);
+				
+				System.out.println(team1ID);
+				System.out.println(team2ID);
 				
 				Map<String, Double> attributeTeam1 = jsonAbfrager.getAttributeVonGespeichertemTeam(team1ID);
 				Map<String, Double> attributeTeam2 = jsonAbfrager.getAttributeVonGespeichertemTeam(team2ID);
@@ -213,15 +268,13 @@ public class Homepage extends JFrame {
 				}
 			}
 		});
-		
 		btnEditTeam.setFont(new Font("Tahoma", Font.BOLD, 16));
 		btnEditTeam.setBounds(10, 162, 160, 40);
 		getContentPane().add(btnEditTeam);
-
 		
+		JLabel lblLogo = new JLabel();
+		lblLogo.setIcon(new ImageIcon(this.getClass().getResource("/resultcalclogoKl.png")));
+		lblLogo.setBounds(10, 362, 191, 191);
+		getContentPane().add(lblLogo);
 	}
-	
-	
-	
-	
 }

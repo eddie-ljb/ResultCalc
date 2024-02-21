@@ -15,5 +15,6 @@ public interface JsonAbfragen {
 	public Set<String> erstelleAttributStringSetFuerErgebnisse();
 	public String getTeamNamenUeberID (Integer teamid);
 	public void getBearbeiteEntryVonID(Integer teamid, double bewertung, double moral, double form);
+	public int getTeamIDVonTeamNamen(String namen);
 
 }

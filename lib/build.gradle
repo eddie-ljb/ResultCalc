@@ -27,6 +27,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.12.5'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.12.5'
     implementation 'org.json:json:20210307'
+    implementation 'com.formdev:flatlaf:3.4'
 }
 
 application {
