@@ -6,6 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 
 import de.ebader.resultcalc.controller.Calc;
@@ -26,6 +27,7 @@ import java.awt.Toolkit;
 import javax.swing.JTextArea;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 
 import javax.swing.JButton;
 import javax.swing.JTextField;
@@ -34,10 +36,14 @@ import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.JComboBox;
 
@@ -190,13 +196,53 @@ public class Homepage extends JFrame {
 				for (Integer integer : teamIDs) {
 					System.out.println(integer);
 				}
+				Map<String, Double> attribute = new HashMap<String, Double>();
+				Map<Integer, Double> sortierListe = new HashMap<Integer, Double>();
 				for (Integer integer : teamIDs) {
-					Map<String, Double> attribute = new HashMap<String, Double>();
 					attribute = jsonAbfrager.getAttributeVonGespeichertemTeam(integer);
-					teamliste += "Team-ID: " + integer + ", Namen: " + jsonAbfrager.getTeamNamenUeberID(integer) + ", Bewertung: " + attribute.get("teambewertung") + ", Moral: " + attribute.get("moral") + ", Form: " + attribute.get("form") + "; \n";
+
+					sortierListe.put(integer, attribute.get("teambewertung"));
 				}
 				
-				int returnValue = JOptionPane.showConfirmDialog(null, teamliste);
+				sortierListe = sortByValue(sortierListe);
+//
+//				Set<Integer> keySet = sortierListe.keySet();
+//				int zaehler = 0;
+//				for (Integer integer : keySet) {
+//					attribute = jsonAbfrager.getAttributeVonGespeichertemTeam(integer);
+//					
+//					if (zaehler == 0) {
+//					teamliste += "ID: " + integer + ", Namen: " + jsonAbfrager.getTeamNamenUeberID(integer) + ", Bewertung: " + attribute.get("teambewertung") + ", Moral: " + attribute.get("moral") + ", Form: " + attribute.get("form") + ";	------";
+//					zaehler++;
+//					} else if (zaehler == 1) {
+//						teamliste += "ID: " + integer + ", Namen: " + jsonAbfrager.getTeamNamenUeberID(integer) + ", Bewertung: " + attribute.get("teambewertung") + ", Moral: " + attribute.get("moral") + ", Form: " + attribute.get("form") + "; \n";
+//						zaehler = 0;					}
+//					
+//				}
+//				
+//				int returnValue = JOptionPane.showConfirmDialog(null, teamliste);
+				
+				JTextArea textArea = new JTextArea();
+		        textArea.setEditable(false); // Stelle die JTextArea als nicht editierbar ein
+
+		        // Iteriere durch die sortierte Liste und füge die Informationen in die JTextArea ein
+		        for (Map.Entry<Integer, ?> entry : sortierListe.entrySet()) {
+		            int key = entry.getKey();
+		            // Annahme: attribute ist der entsprechende Wert für den Schlüssel
+		            attribute = jsonAbfrager.getAttributeVonGespeichertemTeam(key);
+		            textArea.append("ID: " + key + ", Namen: " + jsonAbfrager.getTeamNamenUeberID(key) +
+		                            ", Bewertung: " + attribute.get("teambewertung") +
+		                            ", Moral: " + attribute.get("moral") +
+		                            ", Form: " + attribute.get("form") + ";\n\n");
+		        }
+		        textArea.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		        
+		        // Erstelle eine JScrollPane und füge die JTextArea hinzu
+		        JScrollPane scrollPane = new JScrollPane(textArea);
+		        scrollPane.setPreferredSize(new Dimension(500, 400)); // Setze die Größe des Scrollbereichs
+
+		        // Zeige das JOptionPane mit der JScrollPane an
+		        JOptionPane.showMessageDialog(null, scrollPane);
 			}
 		});
 		
@@ -277,4 +323,16 @@ public class Homepage extends JFrame {
 		lblLogo.setBounds(10, 362, 191, 191);
 		getContentPane().add(lblLogo);
 	}
+	
+	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        List<Entry<K, V>> list = new ArrayList<>(map.entrySet());
+        Collections.sort(list, Collections.reverseOrder(Entry.comparingByValue()));
+
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
+    }
 }
